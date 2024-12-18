@@ -3,14 +3,15 @@ import {
 } from '../controllers/superAdmin.controller.js'
 import { Router } from 'express'
 import verifyJWT from '../middleware/auth.middleware.js'
+import { checkSuperAdmin } from '../middleware/admin.middleware.js'
 const router = Router()
 
 
-router.post('/addUser',verifyJWT,addUser)
-router.get('/leaderBoard',verifyJWT,leaderBoard)
-router.post('/addTeam',verifyJWT,addTeam)
-router.get('/getTeams',verifyJWT,getTeams)
-router.get('/getParticipants',verifyJWT,getParticipants)
-router.post('/assignTeamsJudge',verifyJWT,assignTeamsJudge)
+router.post('/addUser',verifyJWT,checkSuperAdmin,addUser)
+router.get('/leaderBoard',verifyJWT,checkSuperAdmin,leaderBoard)
+router.post('/addTeam',verifyJWT,checkSuperAdmin,addTeam)
+router.get('/getTeams',verifyJWT,checkSuperAdmin,getTeams)
+router.get('/getParticipants',verifyJWT,checkSuperAdmin,getParticipants)
+router.post('/assignTeamsJudge',verifyJWT,checkSuperAdmin,assignTeamsJudge)
 
 export default router

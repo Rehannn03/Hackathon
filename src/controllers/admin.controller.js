@@ -9,7 +9,7 @@ import fs from 'fs'
 import Judge from "../model/judges.model.js";
 import Marks from "../model/marks.model.js";
 const addUser = asyncHandler(async (req, res) => {
-  const { name, email, password, role, workspace } = req.body;
+  const { name, email, password, role, workplace } = req.body;
   if(role=='superAdmin'){
     throw new ApiError(400,'You are not allowed to create super admin')
   }
@@ -18,7 +18,8 @@ const addUser = asyncHandler(async (req, res) => {
     email,
     password,
     role,
-    workplace: workspace,
+    workplace,
+    editedBy: req.user._id,
   });
   if (!user) {
     throw new ApiError(400, "User not created");
@@ -45,6 +46,7 @@ const addTeam = asyncHandler(async (req, res) => {
     teamName,
     teamLead,
     teamMembers,
+    editedBy: req.user._id,
   });
   if (!team) {
     throw new ApiError(400, "Team not created");
@@ -64,7 +66,15 @@ const getTeams = asyncHandler(async (req, res) => {
       },
     },
     {
-      $unwind: "$teamMembers",
+      $lookup:{
+        from:'users',
+        localField:'editedBy',
+        foreignField:'_id',
+        as:'editedBy'
+      }
+    },
+    {
+      $unwind:'$editedBy'
     },
     {
       $project: {
@@ -74,6 +84,11 @@ const getTeams = asyncHandler(async (req, res) => {
           name: 1,
           email: 1,
           workplace: 1,
+        },
+        editedBy: {
+          name: 1,
+          email: 1,
+          role: 1,
         },
       },
     },

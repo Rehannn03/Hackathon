@@ -16,11 +16,9 @@ const teamSchema = new mongoose.Schema({
     editedBy:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'User',
-    },
-    time:{
-        type:Date,
-        default:Date.now
     }
+},{
+    timestamps:true
 })
 
 const Team = mongoose.model("Team", teamSchema);

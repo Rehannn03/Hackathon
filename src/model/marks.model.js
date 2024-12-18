@@ -29,11 +29,9 @@ const marksSchema = new mongoose.Schema({
     editedBy:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'User',
-    },
-    time:{
-        type:Date,
-        default:Date.now
     }
+},{
+    timestamps:true
 })
 
 const Marks = mongoose.model("Marks", marksSchema);

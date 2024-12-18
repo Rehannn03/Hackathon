@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
-
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -16,6 +17,7 @@ const userSchema = new mongoose.Schema({
     role:{
         type: String,
         required: true,
+        enum:['superAdmin','admin','judge','participant']
     },
     food:{
         type:Object,
@@ -39,11 +41,9 @@ const userSchema = new mongoose.Schema({
     editedBy:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'User',
-    },
-    time:{
-        type:Date,
-        default:Date.now
     }
+},{
+    timestamps:true
 });
 
 userSchema.pre('save',async function(next){

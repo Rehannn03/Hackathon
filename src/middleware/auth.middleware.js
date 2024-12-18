@@ -3,7 +3,7 @@ import  User from "../model/user.model.js";
 import { ApiError } from "../utils/apiError.js";
 import jwt from 'jsonwebtoken'
 const verifyJWT=asyncHandler(async(req,_,next)=>{
-    const token=req.cookies?.accessToken || req.headers.authorization?.split(' ')[1]
+    const token=req.cookies?.token || req.headers.authorization?.split(' ')[1]
     
     if(!token){
         throw new ApiError(401,'Unauthorized Access')

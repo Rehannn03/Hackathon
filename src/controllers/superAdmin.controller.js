@@ -5,15 +5,14 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import Marks from "../model/marks.model.js";
 import Team from "../model/team.model.js";
 const addUser=asyncHandler(async(req,res)=>{
-    const {name,email,password,role,workspace}=req.body
+    const {name,email,password,role,workplace}=req.body
     const user=await User.create({
         name,
         email,
         password,
         role,
-        workplace:workspace,
-        editedBy:req.user._id,
-        time:Date.now()
+        workplace,
+        editedBy:req.user._id
     })
     if(!user){
         throw new ApiError(400,'User not created')
@@ -116,7 +115,7 @@ const getTeams = asyncHandler(async (req, res) => {
   });
 
 const getParticipants=asyncHandler(async (req,res)=>{
-    const users=await User.find({role:'participant'}).select('name email workplace food')
+    const users=await User.find({role:'participant'}).select('name email workplace food editedBy').populate('editedBy','name email')
 
     if(!users){
         throw new ApiError(404,'No participants found')

@@ -13,8 +13,10 @@ app.use(cors())
 import superAdminRoutes from './routes/superAdmin.routes.js'
 import adminRoutes from './routes/admin.routes.js'
 import judgeRoutes from './routes/judges.routes.js'
+import userRoutes from './routes/user.routes.js'
 app.use('/api/v1/superAdmin',superAdminRoutes)
 app.use('/api/v1/admin',adminRoutes)
 app.use('/api/v1/judge',judgeRoutes)
+app.use('/api/v1/user',userRoutes)
 
 export default app
