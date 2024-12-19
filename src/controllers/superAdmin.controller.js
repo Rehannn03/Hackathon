@@ -4,6 +4,7 @@ import { ApiResponse } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import Marks from "../model/marks.model.js";
 import Team from "../model/team.model.js";
+import Judge from "../model/judges.model.js";
 const addUser=asyncHandler(async(req,res)=>{
     const {name,email,password,role,workplace}=req.body
     const user=await User.create({
@@ -25,7 +26,7 @@ const leaderBoard=asyncHandler(async(req,res)=>{
 
     if(user.role!='superAdmin'){
         throw new ApiError(401,'You are not allowed to view this page')
-        }
+    }
     const marks=await Marks.aggregate([
       {
         $lookup:{
@@ -53,13 +54,14 @@ const leaderBoard=asyncHandler(async(req,res)=>{
           _id:0,
           teamName:'$team.teamName',
           judgeName:'$judge.name',
-          innovation:1,
-          presentation:1,
-          feasibility:1,
-          teamwork:1,
+          criteria:1,
           total:1
         }
+      },{
+        $sort:{
+          total:-1
       }
+    }
     ])
   
     if(!marks){
@@ -75,47 +77,61 @@ const addTeam = asyncHandler(async (req, res) => {
       teamName,
       teamLead,
       teamMembers,
+      editedBy: req.user._id,
     });
     if (!team) {
       throw new ApiError(400, "Team not created");
     }
   
     res.status(201).json(new ApiResponse(201, team));
-  });
+});
 
 const getTeams = asyncHandler(async (req, res) => {
-    const teams = await Team.aggregate([
-      {
-        $lookup: {
-          from: "users",
-          localField: "teamMembers",
-          foreignField: "_id",
-          as: "teamMembers",
+  const teams = await Team.aggregate([
+    {
+      $lookup: {
+        from: "users",
+        localField: "teamMembers",
+        foreignField: "_id",
+        as: "teamMembers",
+      },
+    },
+    {
+      $lookup:{
+        from:'users',
+        localField:'editedBy',
+        foreignField:'_id',
+        as:'editedBy'
+      }
+    },
+    {
+      $unwind:'$editedBy'
+    },
+    {
+      $project: {
+        teamName: 1,
+        teamLead: 1,
+        teamMembers: {
+          name: 1,
+          email: 1,
+          workplace: 1,
+        },
+        editedBy: {
+          name: 1,
+          email: 1,
+          role: 1,
         },
       },
-      {
-        $unwind: "$teamMembers",
-      },
-      {
-        $project: {
-          teamName: 1,
-          teamLead: 1,
-          teamMembers: {
-            name: 1,
-            email: 1,
-            workplace: 1,
-          },
-        },
-      },
-    ]);
-    if (!teams) {
-      throw new ApiError(404, "No teams found");
-    }
-    res.status(200).json(new ApiResponse(200, teams));
-  });
+    },
+  ]);
+  if (!teams) {
+    throw new ApiError(404, "No teams found");
+  }
+  res.status(200).json(new ApiResponse(200, teams));
+});
 
 const getParticipants=asyncHandler(async (req,res)=>{
-    const users=await User.find({role:'participant'}).select('name email workplace food editedBy').populate('editedBy','name email')
+    const users=await User.find({role:'participant'}).select('name email workplace food editedBy checkIn').populate('editedBy','name email')
 
     if(!users){
         throw new ApiError(404,'No participants found')
@@ -124,26 +140,48 @@ const getParticipants=asyncHandler(async (req,res)=>{
     res.status(200).json(new ApiResponse(200,users))
 })
 
+const checkInbyEmail=asyncHandler(async(req,res)=>{
+  const {email}=req.body
+  
+  const user=await User.findOneAndUpdate(
+    {email},
+    {checkIn:true,
+    editedBy:req.user._id
+    },
+    {new:true}
+  )
+
+  if(!user){
+    throw new ApiError(404,'User not found')
+  }
+
+  return res.status(200).json(new ApiResponse(200,user,'User checked in successfully'))
+})
+
 const assignTeamsJudge=asyncHandler(async(req,res)=>{
-    const {judgeId,teamId}=req.body
-  
-    const judge=await Judge.findByIdAndUpdate(
-      judgeId,
-      {$push:{teams:teamId}},
-      {new:true}
-    )
-  
-    if(!judge){
-      const judge=await Judge.create({
-        teams:[teamId]
-      })
-  
-      return res.status(201).json(new ApiResponse(201,judge))
-    }
-  
-    return res.status(200).json(new ApiResponse(200,judge))
-  })
+  const {judgeId,teamId}=req.body
+
+  const judge=await Judge.findByIdAndUpdate(
+    judgeId,
+    {$push:{teamAssgined:teamId},
+    editedBy:req.user._id
+    },
+    {new:true}
+  )
+
+  if(!judge){
+    const judge=await Judge.create({
+      judge:judgeId,
+      teamAssgined:[teamId],
+      editedBy:req.user._id
+    })
+
+    return res.status(201).json(new ApiResponse(201,judge))
+  }
+
+  return res.status(200).json(new ApiResponse(200,judge))
+})
 
 
 
-  export {addUser,leaderBoard,addTeam,getTeams,getParticipants,assignTeamsJudge}
+export {addUser,leaderBoard,addTeam,getTeams,getParticipants,assignTeamsJudge,checkInbyEmail}

@@ -99,20 +99,22 @@ const getTeams = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, teams));
 });
 
-const checkIn = asyncHandler(async (req,res)=>{
-    const id=req.params.id
+const checkInbyEmail=asyncHandler(async(req,res)=>{
+  const {email}=req.body
+  
+  const user=await User.findOneAndUpdate(
+    {email},
+    {checkIn:true,
+    editedBy:req.user._id
+    },
+    {new:true}
+  )
 
-    const user=await User.findByIdAndUpdate(
-        id,
-        {checkIn:true},
-        {new:true}
-    )
+  if(!user){
+    throw new ApiError(404,'User not found')
+  }
 
-    if(!user){
-        throw new ApiError(404,'User not found')
-    }
-
-    res.status(200).json(new ApiResponse(200,user))
+  return res.status(200).json(new ApiResponse(200,user,'User checked in successfully'))
 })
 
 const bulkCheckIn = asyncHandler(async (req,res)=>{
@@ -150,13 +152,17 @@ const assignTeamsJudge=asyncHandler(async(req,res)=>{
 
   const judge=await Judge.findByIdAndUpdate(
     judgeId,
-    {$push:{teams:teamId}},
+    {$push:{teamAssgined:teamId},
+    editedBy:req.user._id
+    },
     {new:true}
   )
 
   if(!judge){
     const judge=await Judge.create({
-      teams:[teamId]
+      judge:judgeId,
+      teamAssgined:[teamId],
+      editedBy:req.user._id
     })
 
     return res.status(201).json(new ApiResponse(201,judge))
@@ -212,4 +218,4 @@ const leaderBoard=asyncHandler(async(req,res)=>{
 
 
 
-export { addUser, addTeam, getTeams, checkIn, bulkCheckIn ,getParticipants,assignTeamsJudge,leaderBoard};
+export { addUser, addTeam, getTeams, checkInbyEmail, bulkCheckIn ,getParticipants,assignTeamsJudge,leaderBoard};

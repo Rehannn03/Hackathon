@@ -5,7 +5,6 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 const checkRole=asyncHandler(async(req,res,next)=>{
     const user=req.user
-
     if(user.role!='admin'){
         throw new ApiError(401,'Unauthorized')
     }

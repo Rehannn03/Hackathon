@@ -1,42 +1,48 @@
 import Judge from "../model/judges.model.js";
 import Marks from '../model/marks.model.js'
 import { asyncHandler } from "../utils/asyncHandler.js";
-
-
+import { ApiResponse } from "../utils/apiResponse.js";
+import { ApiError } from "../utils/apiError.js";
 const seeAssignedTeams=asyncHandler(async(req,res)=>{
-    const user=req.user.id
-    const teams=await Judge.aggregate([
+    const user=req.user._id
+    const teams = await Judge.aggregate([
         {
-            $match:{
-                _id:user
-            }
+          $match: {
+            judge: user
+          }
         },
         {
-            $lookup:{
-                from:'$teams',
-                localField:'teamAssigned',
-                foreignField:'teamName',
-                as:'teamAssigned'
-            }
+          $lookup: {
+            from: "teams", // Collection name for the `teams` collection
+            localField: "teamAssgined", // Matches the `teamAssigned` field in the Judge schema
+            foreignField: "_id", // The field in the `teams` collection to match against
+            as: "teamAssigned"
+          }
         },
         {
-            $unwind:'$teamAssigned'
-        },
-        {
-            $project:{
-                _id:0,
-                teamAssigned:1
+          $project: {
+            _id: 0,
+            teamAssigned: {
+                $map:{
+                    input:"$teamAssigned",
+                    as:"team",
+                    in:{
+                        teamName:"$$team.teamName",
+                    }
+                }
             }
+          }
         }
-    ])
+      ]);
 
     return res.status(200).json(new ApiResponse(200,teams))
 })
 
 const fillMarks=asyncHandler(async(req,res)=>{
-    const user=req.user.id
+    const user=req.user._id
     const {teamName,innovation,presentation,feasibility,teamwork,prototype,feedback}=req.body
-    const total=parseInt(innovation)+parseInt(presentation)+parseInt(feasibility)+parseInt(teamwork)+parseInt(prototype)
+    console.log(req.body)
+    const total = parseFloat(innovation) + parseFloat(presentation) + parseFloat(feasibility) + parseFloat(teamwork) + parseFloat(prototype);
     const marks=await Marks.create({
         team:teamName,
         judge:user,
@@ -45,19 +51,20 @@ const fillMarks=asyncHandler(async(req,res)=>{
             presentation,
             feasibility,
             teamwork,
-            prototype
+            proto:prototype
         },
         total,
-        feedback
+        feedback,
+        editedBy:user
     })
 
     return res.status(201).json(new ApiResponse(201,marks))
 })
 
 const editMarks=asyncHandler(async(req,res)=>{
-    const user=req.user.id
+    const user=req.user._id
     const {teamName,innovation,presentation,feasibility,teamwork,prototype,feedback}=req.body
-    const total=parseInt(innovation)+parseInt(presentation)+parseInt(feasibility)+parseInt(teamwork)+parseInt(prototype)
+    const total = parseFloat(innovation) + parseFloat(presentation) + parseFloat(feasibility) + parseFloat(teamwork) + parseFloat(prototype);
     const marks=await Marks.findOneAndUpdate({
         team:teamName,
         judge:user
@@ -67,10 +74,11 @@ const editMarks=asyncHandler(async(req,res)=>{
             presentation,
             feasibility,
             teamwork,
-            prototype
+            proto:prototype
         },
         total,
-        feedback
+        feedback,
+        editedBy:user
     })
 
     return res.status(201).json(new ApiResponse(201,marks))
