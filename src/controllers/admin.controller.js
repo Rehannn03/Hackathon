@@ -4,10 +4,11 @@ import { ApiResponse } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import Team from "../model/team.model.js";
 import jwt from 'jsonwebtoken'
-import csvParser from "csv-parser";
+import csv from 'csvtojson'
 import fs from 'fs'
 import Judge from "../model/judges.model.js";
 import Marks from "../model/marks.model.js";
+import PS from '../model/ps.model.js'
 const addUser = asyncHandler(async (req, res) => {
   const { name, email, password, role, workplace } = req.body;
   if(role=='superAdmin'){
@@ -28,17 +29,37 @@ const addUser = asyncHandler(async (req, res) => {
 });
 
 const bulkAddUser=asyncHandler(async(req,res)=>{
-    const csvFilePath=req.file?.path
-
-    fs.createReadStream(csvFilePath)
-    .pipe(csvParser())
-    .on('data',async(data)=>{
-      const {name,email,password, role,workplace}=data
-        
+  var army=[]
+    csv()
+    .fromFile(req.file.path)
+    .then(jsonObj=>{
+      for(var i=0;i<jsonObj.length;i++){
+        var obj={}
+        obj.name=jsonObj[i].name
+        obj.email=jsonObj[i].email
+        obj.password=jsonObj[i].password
+        obj.role=jsonObj[i].role
+        obj.workplace=jsonObj[i].workplace
+        army.push(obj)
+      }
+      const armyWithEdits=army.map((user)=>(
+        {
+          ...user,
+          editedBy:req.user._id
+        }
+      ))
+      const user=User.insertMany(armyWithEdits).then(()=>{
+        fs.unlinkSync(req.file.path)
+        return res.status(201).json(new ApiResponse(201,user,'Users added successfully'))
+      }).catch((err)=>{
+        return res.status(400).json({message:err.message})
+      })
+    }).catch((err)=>{
+      return res.status(400).json({message:
+        err.message
+      })
     })
 })
-
-
 
 const addTeam = asyncHandler(async (req, res) => {
   const { teamName, teamLead, teamMembers } = req.body;
@@ -216,6 +237,21 @@ const leaderBoard=asyncHandler(async(req,res)=>{
   res.status(200).json(new ApiResponse(200,marks))
 })
 
+const addPS=asyncHandler(async(req,res)=>{
+  const {title,description,domain}=req.body
 
+  const ps=await PS.create({
+    title,
+    description,
+    domain,
+    editedBy:req.user._id
+  })
 
-export { addUser, addTeam, getTeams, checkInbyEmail, bulkCheckIn ,getParticipants,assignTeamsJudge,leaderBoard};
+  if(!ps){
+    throw new ApiError(400,'PS not created')
+  }
+
+  return res.status(201).json(new ApiResponse(201,ps))
+})
+
+export { addUser, addTeam, bulkAddUser,getTeams, checkInbyEmail, bulkCheckIn ,getParticipants,assignTeamsJudge,leaderBoard,addPS};
