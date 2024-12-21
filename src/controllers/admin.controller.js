@@ -153,6 +153,44 @@ const bulkCheckIn = asyncHandler(async (req,res)=>{
     res.status(200).json(new ApiResponse(200,users))
 })
 
+const checkInByQr=asyncHandler(async(req,res)=>{
+    const {qrData}=req.body
+
+    const user=await User.findOneAndUpdate(
+      {_id:qrData},
+      {checkIn:true,
+      editedBy:req.user._id
+      },
+      {new:true}
+    )
+
+    if(!user){
+      throw new ApiError(404,'User not found')
+    }
+
+    return res.status(200).json(new ApiResponse(200,user,'User checked in successfully'))
+})
+
+const foodQr=asyncHandler(async(req,res)=>{
+  const {qrData}=req.body
+  const foodName=qrData.foodName
+  const user=await User.findOneAndUpdate(
+    {_id:qrData._id},
+    {
+      food:{
+        ...user.food,
+        [foodName]:1
+      }
+    },
+    {new:true}
+  )
+
+  if(!user){
+    throw new ApiError(404,'User not found')
+  }
+  return res.status(200).json(new ApiResponse(200,user,'Food added successfully'))
+})
+
 const getParticipants=asyncHandler(async (req,res)=>{
     const users=await User.find({role:'participant'}).select('name email workplace food')
 
@@ -161,11 +199,6 @@ const getParticipants=asyncHandler(async (req,res)=>{
     }
 
     res.status(200).json(new ApiResponse(200,users))
-})
-
-const generateQR=asyncHandler(async(req,res)=>{
-  const id=req.params.id
-
 })
 
 const assignTeamsJudge=asyncHandler(async(req,res)=>{
@@ -254,4 +287,4 @@ const addPS=asyncHandler(async(req,res)=>{
   return res.status(201).json(new ApiResponse(201,ps))
 })
 
-export { addUser, addTeam, bulkAddUser,getTeams, checkInbyEmail, bulkCheckIn ,getParticipants,assignTeamsJudge,leaderBoard,addPS};
+export { addUser, addTeam, bulkAddUser,getTeams, checkInbyEmail, bulkCheckIn ,checkInByQr,foodQr,getParticipants,assignTeamsJudge,leaderBoard,addPS};

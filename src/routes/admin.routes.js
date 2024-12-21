@@ -1,5 +1,5 @@
 import {
-    addUser, addTeam, bulkAddUser,getTeams, checkInbyEmail, bulkCheckIn ,getParticipants,assignTeamsJudge,leaderBoard,addPS
+    addUser, addTeam, bulkAddUser,getTeams, checkInbyEmail, bulkCheckIn ,getParticipants,assignTeamsJudge,leaderBoard,addPS,checkInByQr,foodQr
 } from '../controllers/admin.controller.js'
 import { Router } from 'express'
 import verifyJWT from '../middleware/auth.middleware.js'
@@ -17,6 +17,8 @@ router.post('/checkIn',verifyJWT,checkRole,checkInbyEmail)
 router.post('/bulkCheckIn',verifyJWT,checkRole,bulkCheckIn)
 router.get('/getParticipants',verifyJWT,checkRole,getParticipants)
 router.post('/addPS',verifyJWT,checkRole,addPS)
+router.post('/checkInByQr',verifyJWT,checkRole,checkInByQr)
+router.post('/foodQr',verifyJWT,checkRole,foodQr)
 // router.post('/assignTeamsJudge',verifyJWT,checkRole,assignTeamsJudge)
 
 export default router
