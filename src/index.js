@@ -11,3 +11,7 @@ connectDB()
 .catch((error)=>{
     console.log("DB connection error",error.message)
 })
+
+app.get('/',(req,res)=>{
+    res.send('API is running')
+})
