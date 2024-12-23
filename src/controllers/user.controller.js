@@ -30,7 +30,7 @@ const login=asyncHandler(async(req,res)=>{
     return res
     .status(200)
     .cookie('token',token,options)
-    .json(new ApiResponse(200,'Login successful'))
+    .json(new ApiResponse(200,'Login successful',user))
 })
 
 const logout=asyncHandler(async(req,res)=>{
