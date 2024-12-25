@@ -1,5 +1,5 @@
 import {
-    addUser,leaderBoard,addTeam,getTeams,getParticipants,assignTeamsJudge
+    addUser,leaderBoard,addTeam,getTeams,getParticipants,assignTeamsJudge,getJudges
 } from '../controllers/superAdmin.controller.js'
 import { Router } from 'express'
 import verifyJWT from '../middleware/auth.middleware.js'
@@ -13,5 +13,5 @@ router.post('/addTeam',verifyJWT,checkSuperAdmin,addTeam)
 router.get('/getTeams',verifyJWT,checkSuperAdmin,getTeams)
 router.get('/getParticipants',verifyJWT,checkSuperAdmin,getParticipants)
 router.post('/assignTeamsJudge',verifyJWT,checkSuperAdmin,assignTeamsJudge)
-
+router.get('/getJudges',verifyJWT,checkSuperAdmin,getJudges)
 export default router

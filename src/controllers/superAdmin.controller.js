@@ -182,6 +182,14 @@ const assignTeamsJudge=asyncHandler(async(req,res)=>{
   return res.status(200).json(new ApiResponse(200,judge))
 })
 
+const getJudges=asyncHandler(async(req,res)=>{
+  const judges=await User.find({role:'judge'}).select('name email workplace editedBy').populate('editedBy','name email')
 
+  if(!judges){
+    throw new ApiError(404,'No judges found')
+  }
 
-export {addUser,leaderBoard,addTeam,getTeams,getParticipants,assignTeamsJudge,checkInbyEmail}
+  res.status(200).json(new ApiResponse(200,judges))
+})
+
+export {addUser,leaderBoard,addTeam,getTeams,getParticipants,assignTeamsJudge,checkInbyEmail,getJudges}

@@ -13,15 +13,16 @@ app.use(cookieParser())
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (allowedOrigins.includes(origin)) {
-        callback(null, true) // Allow this origin
+      // Allow requests with no origin (like Postman)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true); // Allow this origin
       } else {
-        callback(new Error('Not allowed by CORS')) // Reject other origins
+        callback(new Error('Not allowed by CORS')); // Reject other origins
       }
     },
     credentials: true // Allow credentials (cookies, authorization headers)
   })
-)
+);
 
 import superAdminRoutes from './routes/superAdmin.routes.js'
 import adminRoutes from './routes/admin.routes.js'
