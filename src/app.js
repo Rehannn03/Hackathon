@@ -9,7 +9,7 @@ app.use(express.json())
 app.use(express.urlencoded({extended:true}))
 app.use(cookieParser())
 // app.use(cors())
-app.use(withVercelAnalytics())
+
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -32,5 +32,5 @@ app.use('/api/v1/superAdmin',superAdminRoutes)
 app.use('/api/v1/admin',adminRoutes)
 app.use('/api/v1/judge',judgeRoutes)
 app.use('/api/v1/user',userRoutes)
-
+app.use(withVercelAnalytics())
 export default app
