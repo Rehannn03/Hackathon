@@ -1,7 +1,6 @@
 import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
-import {withVercelAnalytics} from '@vercel/analytics'
 const app=express()
 const allowedOrigins = ['http://localhost:5173', 'https://err404-manager.vercel.app']
 
@@ -32,5 +31,4 @@ app.use('/api/v1/superAdmin',superAdminRoutes)
 app.use('/api/v1/admin',adminRoutes)
 app.use('/api/v1/judge',judgeRoutes)
 app.use('/api/v1/user',userRoutes)
-app.use(withVercelAnalytics())
 export default app
