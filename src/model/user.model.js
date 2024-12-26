@@ -31,6 +31,10 @@ const userSchema = new mongoose.Schema({
     qr:{
         type:String
     },
+    team:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'Team',
+    },
     workplace:{
         type:String,
     },

@@ -7,7 +7,7 @@ import qrcode from 'qrcode'
 import { createCanvas,loadImage } from "canvas";
 const login=asyncHandler(async(req,res)=>{
     const {email,password}=req.body
-    const user=await User.findOne({email})
+    const user=await User.findOne({email}).select('name email role password')
 
     if(!user){
         throw new ApiError(404,"User not found")
@@ -30,8 +30,7 @@ const login=asyncHandler(async(req,res)=>{
 
     return res
     .status(200)
-    .cookie('token',token,options)
-    .json(new ApiResponse(200,'Login successful',user))
+    .json(new ApiResponse(200,'Login successful',user,token))
 })
 
 const logout=asyncHandler(async(req,res)=>{
