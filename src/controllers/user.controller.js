@@ -4,7 +4,7 @@ import { ApiResponse } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import PS from '../model/ps.model.js'
 import qrcode from 'qrcode'
-
+import { createCanvas,loadImage } from "canvas";
 const login=asyncHandler(async(req,res)=>{
     const {email,password}=req.body
     const user=await User.findOne({email})
@@ -24,7 +24,8 @@ const login=asyncHandler(async(req,res)=>{
     const options={
         httpOnly:true,
         SameSite:'None',
-        secure:true
+        secure:true,
+        maxAge:7*24*60*60*1000,
     }
 
     return res
@@ -65,7 +66,17 @@ const participantInfoQR=asyncHandler(async(req,res)=>{
                 },
                 width:300,
             }
-            const qr=await qrcode.toDataURL(user._id.toString(),options)
+            const canvas=createCanvas(300,300)
+            await qrcode.toCanvas(canvas,user._id.toString(),options)
+
+            const ctx=canvas.getContext('2d')
+            const img=await loadImage('../dinosaur.png')
+            const imgSize=50
+            const centerX=(canvas.width-imgSize)/2
+            const centerY=(canvas.height-imgSize)/2
+
+            ctx.drawImage(img,centerX,centerY,imgSize,imgSize)
+            const qr=canvas.toDataURL('image/jpeg')
             user.qr=qr
             await user.save()
             return res.status(200).json(new ApiResponse(200,'QR generated successfully',qr))
