@@ -68,17 +68,7 @@ const participantInfoQR=asyncHandler(async(req,res)=>{
                 },
                 width:300,
             }
-            const canvas=createCanvas(300,300)
-            await qrcode.toCanvas(canvas,user._id.toString(),options)
-
-            const ctx=canvas.getContext('2d')
-            const img=await loadImage('../dinosaur.png')
-            const imgSize=50
-            const centerX=(canvas.width-imgSize)/2
-            const centerY=(canvas.height-imgSize)/2
-
-            ctx.drawImage(img,centerX,centerY,imgSize,imgSize)
-            const qr=canvas.toDataURL('image/jpeg')
+            const qr=await qrcode.toDataURL(user._id.toString(),options)
             user.qr=qr
             await user.save()
             return res.status(200).json(new ApiResponse(200,'QR generated successfully',qr))
