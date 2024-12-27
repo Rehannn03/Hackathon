@@ -6,6 +6,7 @@ import {
   getParticipants,
   assignTeamsJudge,
   getJudges,
+  getAssignedJudges,
   getParticipantsNotAddedToTeam
 } from "../controllers/superAdmin.controller.js";
 import { Router } from "express";
@@ -19,6 +20,7 @@ router.post("/addTeam", verifyJWT, checkSuperAdmin, addTeam);
 router.get("/getTeams", verifyJWT, checkSuperAdmin, getTeams);
 router.get("/getParticipants", verifyJWT, checkSuperAdmin, getParticipants);
 router.post("/assignTeamsJudge", verifyJWT, checkSuperAdmin, assignTeamsJudge);
+router.get("/getAssignedJudges", verifyJWT, checkSuperAdmin, getAssignedJudges);
 router.get("/getJudges", verifyJWT, checkSuperAdmin, getJudges);
 router.get('/getParticipantsNotTeam',verifyJWT,checkSuperAdmin,getParticipantsNotAddedToTeam)
 export default router;
