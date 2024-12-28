@@ -11,7 +11,8 @@ import {
   addPS,
   checkInByQr,
   foodQr,
-  getCheckedInUsers
+  getCheckedInUsers,
+  getNotCheckedInParticipants
 } from "../controllers/admin.controller.js";
 import { Router } from "express";
 import verifyJWT from "../middleware/auth.middleware.js";
@@ -37,6 +38,7 @@ router.post("/addPS", verifyJWT, checkRole, addPS);
 router.post("/checkInByQr", verifyJWT, checkRole, checkInByQr);
 router.post("/foodQr", verifyJWT, checkRole, foodQr);
 router.get("/getCheckedInUsers", verifyJWT, checkRole, getCheckedInUsers);
+router.get('/notCheckIn',verifyJWT,checkRole,getNotCheckedInParticipants)
 // router.post('/assignTeamsJudge',verifyJWT,checkRole,assignTeamsJudge)
 
 export default router;

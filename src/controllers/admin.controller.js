@@ -299,6 +299,15 @@ const addPS = asyncHandler(async (req, res) => {
   return res.status(201).json(new ApiResponse(201, ps));
 });
 
+const getNotCheckedInParticipants=asyncHandler(async(req,res)=>{
+  const users=await User.find({role:"participant",checkIn:false}).select("name email workplace")
+  if(!users){
+    throw new ApiError(404,"No participants found")
+  }
+  return res.status(200).json(new ApiResponse(200,users))
+})
+
+
 export {
   addUser,
   addTeam,
@@ -312,5 +321,6 @@ export {
   assignTeamsJudge,
   leaderBoard,
   addPS,
-  getCheckedInUsers
+  getCheckedInUsers,
+  getNotCheckedInParticipants
 };
