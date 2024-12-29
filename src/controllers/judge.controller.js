@@ -3,40 +3,46 @@ import Marks from '../model/marks.model.js'
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { ApiError } from "../utils/apiError.js";
-const seeAssignedTeams=asyncHandler(async(req,res)=>{
-    const user=req.user._id
-    const teams = await Judge.aggregate([
-        {
+const seeAssignedTeams = asyncHandler(async (req, res) => {
+  const user = req.user._id;
+  const teams = await Judge.aggregate([
+      {
           $match: {
-            judge: user
+              judge: user
           }
-        },
-        {
+      },
+      {
           $lookup: {
-            from: "teams", // Collection name for the `teams` collection
-            localField: "teamAssgined", // Matches the `teamAssigned` field in the Judge schema
-            foreignField: "_id", // The field in the `teams` collection to match against
-            as: "teamAssigned"
+              from: "teams",
+              localField: "teamAssgined",
+              foreignField: "_id",
+              as: "teamAssigned"
           }
-        },
-        {
+      },
+      {
+          $unwind: "$teamAssigned"
+      },
+      {
+          $group: {
+              _id: null,
+              teamAssigned: {
+                  $push: {
+                      teamId: "$teamAssigned._id",
+                      teamName: "$teamAssigned.teamName"
+                  }
+              }
+          }
+      },
+      {
           $project: {
-            _id: 0,
-            teamAssigned: {
-                $map:{
-                    input:"$teamAssigned",
-                    as:"team",
-                    in:{
-                        teamName:"$$team.teamName",
-                    }
-                }
-            }
+              _id: 0,
+              teamAssigned: 1
           }
-        }
-      ]);
+      }
+  ]);
 
-    return res.status(200).json(new ApiResponse(200,teams))
-})
+  return res.status(200).json(new ApiResponse(200, teams));
+});
 
 const fillMarks=asyncHandler(async(req,res)=>{
     const user=req.user._id
