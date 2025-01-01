@@ -9,6 +9,7 @@ import fs from "fs";
 import Judge from "../model/judges.model.js";
 import Marks from "../model/marks.model.js";
 import PS from "../model/ps.model.js";
+import bcrypt from "bcryptjs";
 const addUser = asyncHandler(async (req, res) => {
   const { name, email, password, role, workplace } = req.body;
   if (role == "superAdmin") {
@@ -32,7 +33,7 @@ const bulkAddUser = asyncHandler(async (req, res) => {
   var army = [];
   csv()
     .fromFile(req.file.path)
-    .then((jsonObj) => {
+    .then(async(jsonObj) => {
       for (var i = 0; i < jsonObj.length; i++) {
         var obj = {};
         obj.name = jsonObj[i].name;
@@ -42,10 +43,14 @@ const bulkAddUser = asyncHandler(async (req, res) => {
         obj.workplace = jsonObj[i].workplace;
         army.push(obj);
       }
-      const armyWithEdits = army.map((user) => ({
-        ...user,
-        editedBy: req.user._id,
-      }));
+      const armyWithEdits = await Promise.all(army.map(async (user) => {
+        const hashedPassword = await bcrypt.hash(user.password, 10);
+        return {
+            ...user,
+            password: hashedPassword,
+            editedBy: req.user._id,
+        };
+    }));
       const user = User.insertMany(armyWithEdits)
         .then(() => {
           fs.unlinkSync(req.file.path);
