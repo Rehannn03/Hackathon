@@ -97,24 +97,6 @@ REDIS_URL=your_redis_url
    npm run dev
 ```
 
-## 📡 API Endpoints
-
-| Method | Endpoint             | Description                     |
-|--------|----------------------|---------------------------------|
-| GET    | `/api/users`         | Fetch all users                |
-| POST   | `/api/auth/login`    | Authenticate user               |
-| POST   | `/api/teams/create`  | Create a new team               |
-| GET    | `/api/leaderboard`   | Get leaderboard data            |
-| POST   | `/api/judging/score` | Submit project scores           |
-
-📜 **Full API Documentation:** [API Docs](path/to/api_docs.md)
-
-## 📌 Future Enhancements
-
-🔹 AI-powered project evaluation.  
-🔹 Blockchain-based certificate issuance.  
-🔹 Advanced analytics for hackathon insights.  
-
 ## 🏆 Contributors
 
 👨‍💻 **Backend Developer:** [Rehan Shah](https://github.com/Rehannn03)  
