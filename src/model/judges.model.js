@@ -6,8 +6,13 @@ const judgeSchema = new mongoose.Schema({
         ref:'User',
     },
     teamAssgined:[{
+        teamId:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Team',
+        },
+        round:{
+            type:String,
+        }
     }],
     editedBy:{
         type:mongoose.Schema.Types.ObjectId,

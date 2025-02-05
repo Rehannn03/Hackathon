@@ -14,7 +14,7 @@ const addUser = asyncHandler(async (req, res) => {
     role,
     workplace,
     editedBy: req.user._id,
-    team:null
+    team: null,
   });
   if (!user) {
     throw new ApiError(400, "User not created");
@@ -83,7 +83,11 @@ const addTeam = asyncHandler(async (req, res) => {
     editedBy: req.user._id,
   });
 
-  const updateUsers=await User.updateMany({_id:{$in:teamMembers}},{team:team._id},{new:true})
+  const updateUsers = await User.updateMany(
+    { _id: { $in: teamMembers } },
+    { team: team._id },
+    { new: true }
+  );
   if (!team) {
     throw new ApiError(400, "Team not created");
   }
@@ -166,18 +170,25 @@ const checkInbyEmail = asyncHandler(async (req, res) => {
 });
 
 const assignTeamsJudge = asyncHandler(async (req, res) => {
-  const { judgeId, teamId } = req.body;
+  const { judgeId, teamId, round } = req.body;
 
+  const teamToAssign=teamId.map(teamId=>({
+    teamId:teamId,
+    round:round
+  }))
   const judge = await Judge.findByIdAndUpdate(
     judgeId,
-    { $push: { teamAssgined: teamId }, editedBy: req.user._id },
+    {
+      $push: { teamAssgined: { $each:teamToAssign } },
+      editedBy: req.user._id,
+    },
     { new: true }
   );
 
   if (!judge) {
     const judge = await Judge.create({
       judge: judgeId,
-      teamAssgined: [teamId],
+      teamAssgined: teamToAssign,
       editedBy: req.user._id,
     });
 
@@ -199,26 +210,31 @@ const getJudges = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, judges));
 });
 
-const getParticipantsNotAddedToTeam=asyncHandler(async(req,res)=>{
-  const users=await User.find({role:'participant',team:null}).select('name email')
+const getParticipantsNotAddedToTeam = asyncHandler(async (req, res) => {
+  const users = await User.find({ role: "participant", team: null }).select(
+    "name email"
+  );
 
-  if(!users){
-    throw new ApiError(404,'No participants found')
+  if (!users) {
+    throw new ApiError(404, "No participants found");
   }
 
-  res.status(200).json(new ApiResponse(200,users))
-})
+  res.status(200).json(new ApiResponse(200, users));
+});
 
-const getAssignedJudges=asyncHandler(async(req,res)=>{
-  const judges=await Judge.find({}).select('judge teamAssgined editedBy').populate('judge','name email').populate('editedBy','name email').populate('teamAssgined','teamName')
+const getAssignedJudges = asyncHandler(async (req, res) => {
+  const judges = await Judge.find({})
+    .select("judge teamAssgined editedBy")
+    .populate("judge", "name email")
+    .populate("editedBy", "name email")
+    .populate("teamAssgined", "teamId");
 
-  if(!judges){
-    throw new ApiError(404,'No judges found')
+  if (!judges) {
+    throw new ApiError(404, "No judges found");
   }
 
-  return res.status(200).json(new ApiResponse(200,judges))
-
-})
+  return res.status(200).json(new ApiResponse(200, judges));
+});
 
 export {
   addUser,
@@ -230,5 +246,5 @@ export {
   checkInbyEmail,
   getJudges,
   getAssignedJudges,
-  getParticipantsNotAddedToTeam
+  getParticipantsNotAddedToTeam,
 };

@@ -5,10 +5,15 @@ const marksSchema = new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:'Team',
     },
-    judge:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'User',
-    },
+    judge:[{
+        judgeAssigned:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:'User',
+        },
+        round:{
+            type:String,
+        }
+    }],
     criteria:{
         type:Object,
         default:{
@@ -20,11 +25,20 @@ const marksSchema = new mongoose.Schema({
         }
     },
     total:{
-        type:Number,
-        default:0
+        round:{
+            type:String,
+        },
+        score:{
+            type:Number,
+            default:0
+        }
     },
     feedback:{
         type:String,
+    },
+    editCount:{
+        type:Number,
+        default:0
     },
     editedBy:{
         type:mongoose.Schema.Types.ObjectId,
