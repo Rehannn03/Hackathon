@@ -14,7 +14,7 @@ const marksSchema = new mongoose.Schema({
             type:String,
         }
     }],
-    criteria:{
+    criteria:[{
         type:Object,
         default:{
             innovation:{type:Number,default:0,required:true},
@@ -23,8 +23,8 @@ const marksSchema = new mongoose.Schema({
             teamwork:{type:Number,default:0,required:true},
             proto:{type:Number,default:0,required:true}
         }
-    },
-    total:{
+    }],
+    total:[{
         round:{
             type:String,
         },
@@ -32,11 +32,15 @@ const marksSchema = new mongoose.Schema({
             type:Number,
             default:0
         }
-    },
-    feedback:{
+    }],
+    feedback:[{
         type:String,
-    },
+    }],
     editCount:{
+        type:Number,
+        default:0
+    },
+    grandTotal:{
         type:Number,
         default:0
     },

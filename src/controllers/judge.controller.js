@@ -71,24 +71,25 @@ const fillMarks=asyncHandler(async(req,res)=>{
             team:teamName
         },{
             $push:{
-                judge:{
+              judge:{
                     judgeAssigned:user,
                     round:round
                 }
-            },
-            criteria:{
+            ,
+              criteria:{
                 innovation,
                 presentation,
                 feasibility,
                 teamwork,
                 proto:prototype
             },
-            total:{
-                round,
-                score:totalScore
+              total:{
+                    round,
+                    score:totalScore
+                },
+              feedback,
             },
-            $inc:{editCount:1},
-            feedback,
+            $inc:{editCount:1,grandTotal:totalScore}
         },{
             new:true
         })
@@ -110,12 +111,14 @@ const fillMarks=asyncHandler(async(req,res)=>{
             teamwork,
             proto:prototype
         },
-        total:{
-            round,
-            score:totalScore
-        },
+            total:{
+                round,
+                score:totalScore
+            }
+        ,
         feedback,
         editCount:1,
+        grandTotal:totalScore,
         editedBy:user
     })
 
@@ -123,38 +126,60 @@ const fillMarks=asyncHandler(async(req,res)=>{
 }
 })
 
-const editMarks=asyncHandler(async(req,res)=>{
-    const user=req.user._id
-    const {teamName,innovation,presentation,feasibility,teamwork,prototype,feedback}=req.body
-    const totalScore = parseFloat(innovation) + parseFloat(presentation) + parseFloat(feasibility) + parseFloat(teamwork) + parseFloat(prototype);
-    const checkCount=await Marks.findOne({
-        team:teamName,
-        judge:user
-    })
-    if(checkCount.editCount>=3){
-        return res.status(400).json(new ApiError(400,"Cannot edit marks more than 2 times"))
-    }
-    const marks=await Marks.findOneAndUpdate({
-        team:teamName,
-        judge:user
-    },{
-        criteria:{
-            innovation,
-            presentation,
-            feasibility,
-            teamwork,
-            proto:prototype
-        },
-        total:{
-            score:totalScore,
-        },
-        feedback,
-        $inc:{editCount:1},
-        editedBy:user
-    })
+const editMarks = asyncHandler(async (req, res) => {
+  const user = req.user._id;
+  const { teamName, round, innovation, presentation, feasibility, teamwork, prototype, feedback } = req.body;
+  const totalScore = parseFloat(innovation) + parseFloat(presentation) + parseFloat(feasibility) + parseFloat(teamwork) + parseFloat(prototype);
 
-    return res.status(201).json(new ApiResponse(201,marks))
-})
+
+  const marks = await Marks.findOne({ team: teamName });
+
+  if (!marks) {
+      return res.status(404).json(new ApiError(404, "Marks record not found"));
+  }
+
+
+  const judgeEntry = marks.judge.find(j => j.judgeAssigned.toString() === user.toString() && j.round === round);
+  
+  if (!judgeEntry) {
+      return res.status(403).json(new ApiError(403, "You are not assigned as a judge for this round"));
+  }
+
+
+  if (marks.editCount >= 4) {
+      return res.status(400).json(new ApiError(400, "Cannot edit marks more than 2 times"));
+  }
+
+
+  const roundIndex = marks.criteria.findIndex((_, index) => marks.total[index].round === round);
+  
+  if (roundIndex === -1) {
+      return res.status(400).json(new ApiError(400, "Invalid round"));
+  }
+
+
+  marks.criteria[roundIndex] = { innovation, presentation, feasibility, teamwork, proto: prototype };
+
+
+  marks.total[roundIndex].score = totalScore;
+
+
+  marks.grandTotal = marks.total.reduce((sum, entry) => sum + entry.score, 0);
+
+
+  if (feedback) {
+      marks.feedback.push(feedback);
+  }
+
+
+  marks.editCount += 1;
+  marks.editedBy = user;
+
+  // Save the updated document
+  await marks.save();
+
+  return res.status(200).json(new ApiResponse(200, marks, "Marks updated successfully"));
+});
 
 const viewPreviousMarks=asyncHandler(async(req,res)=>{
     const user=req.user._id

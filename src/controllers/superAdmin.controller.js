@@ -25,9 +25,10 @@ const addUser = asyncHandler(async (req, res) => {
 const leaderBoard = asyncHandler(async (req, res) => {
   const user = req.user;
 
-  if (user.role != "superAdmin") {
+  if (user.role !== "superAdmin") {
     throw new ApiError(401, "You are not allowed to view this page");
   }
+
   const marks = await Marks.aggregate([
     {
       $lookup: {
@@ -41,33 +42,62 @@ const leaderBoard = asyncHandler(async (req, res) => {
       $unwind: "$team",
     },
     {
+      $unwind: "$judge", // Flatten judges
+    },
+    {
       $lookup: {
         from: "users",
-        localField: "judge",
+        localField: "judge.judgeAssigned",
         foreignField: "_id",
-        as: "judge",
+        as: "judgeDetails",
       },
     },
     {
-      $unwind: "$judge",
+      $unwind: "$judgeDetails",
+    },
+    {
+      $unwind: "$total", // Flatten total scores to match judges and rounds
+    },
+    {
+      $match: {
+        $expr: { $eq: ["$total.round", "$judge.round"] }, // Match judge to correct round
+      },
     },
     {
       $project: {
         _id: 0,
         teamName: "$team.teamName",
-        judgeName: "$judge.name",
-        criteria: 1,
-        total: 1,
+        round: "$total.round",
+        score: "$total.score",
+        judgeName: "$judgeDetails.name",
       },
     },
     {
-      $sort: {
-        total: -1,
+      $group: {
+        _id: { teamName: "$teamName", round: "$round" },
+        totalScore: { $sum: "$score" },
+        judges: { $push: "$judgeName" },
       },
+    },
+    {
+      $group: {
+        _id: "$_id.teamName",
+        rounds: {
+          $push: {
+            round: "$_id.round",
+            score: "$totalScore",
+            judges: "$judges",
+          },
+        },
+        grandTotal: { $sum: "$totalScore" },
+      },
+    },
+    {
+      $sort: { grandTotal: -1 }, // Sort by grand total
     },
   ]);
 
-  if (!marks) {
+  if (!marks || marks.length === 0) {
     throw new ApiError(404, "No marks found");
   }
 
