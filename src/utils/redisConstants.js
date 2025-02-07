@@ -1,0 +1,20 @@
+export const REDIS_KEYS={
+    USER:{
+        LIST:'user:list',
+        DETAILS:'user:details'
+    },
+    TEAM:'team',
+    JUDGE:{
+        ASSIGNED:'judge:assigned',
+        LIST:'judge:list',
+        MARKS:'judge:marks'
+    },
+    LEADERBOARD:'leaderboard',
+    PS:'ps',
+    PARTICIPANT:'participant',
+    EXPIRY:{
+        SHORT:300,
+        MEDIUM:3600,
+        LONG:86400
+    }
+}

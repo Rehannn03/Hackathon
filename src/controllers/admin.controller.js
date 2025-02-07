@@ -10,6 +10,8 @@ import Judge from "../model/judges.model.js";
 import Marks from "../model/marks.model.js";
 import PS from "../model/ps.model.js";
 import bcrypt from "bcryptjs";
+import { redisKeys } from "../utils/redisKeys.js";
+import { REDIS_KEYS } from "../utils/redisConstants.js";
 const addUser = asyncHandler(async (req, res) => {
   const { name, email, password, role, workplace } = req.body;
   if (role == "superAdmin") {
@@ -26,6 +28,12 @@ const addUser = asyncHandler(async (req, res) => {
   if (!user) {
     throw new ApiError(400, "User not created");
   }
+  await Promise.all([
+    redisKeys.clearCache(`${REDIS_KEYS.USER.LIST}:*`),
+    redisKeys.clearCache(`${REDIS_KEYS.TEAM}:*`),
+    redisKeys.clearCache(`${REDIS_KEYS.JUDGE.LIST}:*`),
+    redisKeys.clearCache(`${REDIS_KEYS.JUDGE.ASSIGNED}:*`),
+  ])
   res.status(201).json(new ApiResponse(201, user));
 });
 
@@ -51,6 +59,12 @@ const bulkAddUser = asyncHandler(async (req, res) => {
             editedBy: req.user._id,
         };
     }));
+    await Promise.all([
+      redisKeys.clearCache(`${REDIS_KEYS.USER.LIST}:*`),
+      redisKeys.clearCache(`${REDIS_KEYS.TEAM}:*`),
+      redisKeys.clearCache(`${REDIS_KEYS.JUDGE.LIST}:*`),
+      redisKeys.clearCache(`${REDIS_KEYS.JUDGE.ASSIGNED}:*`),
+    ])
       const user = User.insertMany(armyWithEdits)
         .then(() => {
           fs.unlinkSync(req.file.path);
@@ -78,7 +92,11 @@ const addTeam = asyncHandler(async (req, res) => {
   if (!team) {
     throw new ApiError(400, "Team not created");
   }
-
+  await Promise.all([
+    redisKeys.clearCache(`${REDIS_KEYS.USER.LIST}:*`),
+    redisKeys.clearCache(`${REDIS_KEYS.TEAM}:*`),
+    redisKeys.clearCache(`${REDIS_KEYS.JUDGE.ASSIGNED}:*`),
+  ])
   res.status(201).json(new ApiResponse(201, team));
 });
 
@@ -138,7 +156,11 @@ const checkInbyEmail = asyncHandler(async (req, res) => {
   if (!user) {
     throw new ApiError(404, "User not found");
   }
-
+  await Promise.all([
+    redisKeys.clearCache(`${REDIS_KEYS.USER.LIST}:*`),
+    redisKeys.clearCache(`${REDIS_KEYS.TEAM}:*`),
+    redisKeys.clearCache(`${REDIS_KEYS.JUDGE.ASSIGNED}:*`),
+  ])
   return res
     .status(200)
     .json(new ApiResponse(200, user, "User checked in successfully"));
@@ -168,7 +190,11 @@ const checkInByQr = asyncHandler(async (req, res) => {
   if (!user) {
     throw new ApiError(404, "User not found");
   }
-
+  await Promise.all([
+    redisKeys.clearCache(`${REDIS_KEYS.USER.LIST}:*`),
+    redisKeys.clearCache(`${REDIS_KEYS.TEAM}:*`),
+    redisKeys.clearCache(`${REDIS_KEYS.JUDGE.ASSIGNED}:*`),
+  ])
   return res
     .status(200)
     .json(new ApiResponse(200, user, "User checked in successfully"));
@@ -300,9 +326,19 @@ const addPS = asyncHandler(async (req, res) => {
   if (!ps) {
     throw new ApiError(400, "PS not created");
   }
-
+  await Promise.all([
+    redisKeys.clearCache(`${REDIS_KEYS.PS}:*`),
+  ])
   return res.status(201).json(new ApiResponse(201, ps));
 });
+
+const getPS=asyncHandler(async(req,res)=>{
+  const ps=await PS.find({})
+  if(!ps){
+    throw new ApiError(404,"No PS found")
+  }
+  return res.status(200).json(new ApiResponse(200,ps))
+})
 
 const getNotCheckedInParticipants=asyncHandler(async(req,res)=>{
   const users=await User.find({role:"participant",checkIn:false}).select("name email workplace")
@@ -327,5 +363,6 @@ export {
   leaderBoard,
   addPS,
   getCheckedInUsers,
-  getNotCheckedInParticipants
+  getNotCheckedInParticipants,
+  getPS
 };
