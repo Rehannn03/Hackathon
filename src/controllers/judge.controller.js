@@ -179,6 +179,7 @@ const editMarks = asyncHandler(async (req, res) => {
 
     await marks.save();
     await Promise.all([
+        redisKeys.clearCache(${REDIS_KEYS.JUDGE.MARKS}:${user}:${teamName}),
         redisKeys.clearCache(`${REDIS_KEYS.LEADERBOARD}:*`)
     ])
     return res.status(200).json(new ApiResponse(200, marks, "Marks updated successfully"));
