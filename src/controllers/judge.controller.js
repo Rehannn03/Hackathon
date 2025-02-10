@@ -154,7 +154,7 @@ const editMarks = asyncHandler(async (req, res) => {
         return res.status(403).json(new ApiError(403, "You are not assigned as a judge for this round"));
     }
 
-    if (marks.editCount >= 4) {
+    if (marks.editCount >= 6) {
         return res.status(400).json(new ApiError(400, "Cannot edit marks more than 2 times"));
     }
 
@@ -179,7 +179,8 @@ const editMarks = asyncHandler(async (req, res) => {
 
     await marks.save();
     await Promise.all([
-        redisKeys.clearCache(`${REDIS_KEYS.LEADERBOARD}:*`)
+        redisKeys.clearCache(`${REDIS_KEYS.LEADERBOARD}:*`),
+        redisKeys.clearCache(`${REDIS_KEYS.JUDGE.MARKS}:${user}:${teamName}`)
     ])
     return res.status(200).json(new ApiResponse(200, marks, "Marks updated successfully"));
 });
