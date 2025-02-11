@@ -105,7 +105,9 @@ const fillMarks = asyncHandler(async (req, res) => {
             new: true
         });
         return res.status(201).json(new ApiResponse(201, marks));
-    } else {
+    }else if(check && check.judge.includes(user)){
+        return res.status(403).json(new ApiError(403, "You have already filled the marks for this team"));
+    }else {
         const marks = await Marks.create({
             team: teamName,
             judge: [
