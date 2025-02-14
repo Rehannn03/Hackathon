@@ -72,7 +72,15 @@ const participantInfoQR = asyncHandler(async (req, res) => {
 });
 
 const getInfo = asyncHandler(async (req, res) => {
-    const user = req.user;
+    let user = req.user;
+    user={
+        name:user.name,
+        email:user.email,
+        role:user.role,
+        workplace:user.workplace,
+        checkIn:user.checkIn,
+        qr:user.qr
+    }
     return res.status(200).json(new ApiResponse(200, 'User info', user));
 });
 
