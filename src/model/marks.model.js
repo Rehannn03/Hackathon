@@ -17,11 +17,11 @@ const marksSchema = new mongoose.Schema({
     criteria:[{
         type:Object,
         default:{
-            innovation:{type:Number,default:0,required:true},
-            presentation:{type:Number,default:0,required:true},
-            feasibility:{type:Number,default:0,required:true},
-            teamwork:{type:Number,default:0,required:true},
-            proto:{type:Number,default:0,required:true}
+            approach:{type:Number,default:0,required:true},
+            ambition:{type:Number,default:0,required:true},
+            tech:{type:Number,default:0,required:true},
+            execution:{type:Number,default:0,required:true},
+            ui:{type:Number,default:0,required:true}
         }
     }],
     total:[{

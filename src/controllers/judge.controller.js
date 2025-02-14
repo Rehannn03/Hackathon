@@ -73,8 +73,8 @@ const seeAssignedTeams = asyncHandler(async (req, res) => {
 
 const fillMarks = asyncHandler(async (req, res) => {
     const user = req.user._id;
-    const { teamName, innovation, presentation, feasibility, teamwork, prototype, feedback, round } = req.body;
-    const totalScore = parseFloat(innovation) + parseFloat(presentation) + parseFloat(feasibility) + parseFloat(teamwork) + parseFloat(prototype);
+    const { teamName,approach,ambition,tech,execution,ui, feedback, round } = req.body;
+    const totalScore = parseFloat(approach) + parseFloat(ambition) + parseFloat(tech) + parseFloat(execution) + parseFloat(ui);
     const check = await Marks.findOne({
         team: teamName,
     });
@@ -88,11 +88,11 @@ const fillMarks = asyncHandler(async (req, res) => {
                     round: round
                 },
                 criteria: {
-                    innovation,
-                    presentation,
-                    feasibility,
-                    teamwork,
-                    proto: prototype
+                    approach,
+                    ambition,
+                    tech,
+                    execution,
+                    ui
                 },
                 total: {
                     round,
@@ -117,11 +117,11 @@ const fillMarks = asyncHandler(async (req, res) => {
                 }
             ],
             criteria: {
-                innovation,
-                presentation,
-                feasibility,
-                teamwork,
-                proto: prototype
+                approach,
+                ambition,
+                tech,
+                execution,
+                ui
             },
             total: {
                 round,
@@ -141,8 +141,8 @@ const fillMarks = asyncHandler(async (req, res) => {
 
 const editMarks = asyncHandler(async (req, res) => {
     const user = req.user._id;
-    const { teamName, round, innovation, presentation, feasibility, teamwork, prototype, feedback } = req.body;
-    const totalScore = parseFloat(innovation) + parseFloat(presentation) + parseFloat(feasibility) + parseFloat(teamwork) + parseFloat(prototype);
+    const { teamName, round, approach,ambition,tech,execution,ui, feedback } = req.body;
+    const totalScore = parseFloat(approach) + parseFloat(ambition) + parseFloat(tech) + parseFloat(execution) + parseFloat(ui);
 
     const marks = await Marks.findOne({ team: teamName });
 
@@ -166,7 +166,7 @@ const editMarks = asyncHandler(async (req, res) => {
         return res.status(400).json(new ApiError(400, "Invalid round"));
     }
 
-    marks.criteria[roundIndex] = { innovation, presentation, feasibility, teamwork, proto: prototype };
+    marks.criteria[roundIndex] = { approach,ambition,tech,execution,ui };
 
     marks.total[roundIndex].score = totalScore;
 
