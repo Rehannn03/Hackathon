@@ -231,4 +231,19 @@ const viewPreviousMarks = asyncHandler(async (req, res) => {
     }
 });
 
-export { seeAssignedTeams, fillMarks, editMarks, viewPreviousMarks };
+const viewPreviousRoundFeedback=asyncHandler(async(req,res)=>{
+    const {teamName}=req.params;
+    const marks = await Marks.findOne({ team: teamName });
+
+        if (!marks || !marks.feedback || marks.feedback.length === 0) {
+            return res.status(404).json(new ApiError(404, "No previous feedback found for the given team."));
+        }
+
+        // Get the latest feedback (last entry in the array)
+        const previousFeedback = marks.feedback[marks.feedback.length - 1];
+
+        return res.status(200).json(new ApiResponse(200, {
+            previousFeedback
+        }));
+})
+export { seeAssignedTeams, fillMarks, editMarks, viewPreviousMarks ,viewPreviousRoundFeedback};
